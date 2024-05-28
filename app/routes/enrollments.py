@@ -1,73 +1,53 @@
 from flask import Blueprint, request, jsonify, send_file
-from app.models import Enrollment, Course
-from app import db
+from app.services.enrollment_service import enroll_course, drop_course, get_enrollments, get_all_enrollments
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from io import BytesIO
 import pandas as pd
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from datetime import datetime
 
 bp = Blueprint('enrollments', __name__)
 
-
 @bp.route('/enrollments', methods=['POST'])
 @jwt_required()
-def enroll_course():
+def enroll_course_route():
     identity = get_jwt_identity()
     student_id = identity.get('user_id')
     data = request.get_json()
     course_id = data.get('course_id')
-
-    course = Course.query.get_or_404(course_id)
-
-    if Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first():
-        return jsonify({"msg": "Already enrolled in this course"}), 400
-
-    if Enrollment.query.filter_by(course_id=course_id).count() >= course.max_students:
-        return jsonify({"msg": "Course is full"}), 400
-
-    enrollment = Enrollment(student_id=student_id, course_id=course_id, enrollment_date=datetime.utcnow())
-    db.session.add(enrollment)
-    db.session.commit()
-
-    return jsonify({"msg": "Enrolled in course successfully"}), 201
-
+    try:
+        enrollment = enroll_course(student_id, course_id)
+        return jsonify({"msg": "Enrolled in course successfully", "enrollment": enrollment.course_id}), 201
+    except ValueError as e:
+        return jsonify({"msg": str(e)}), 400
 
 @bp.route('/enrollments/<int:course_id>', methods=['DELETE'])
 @jwt_required()
-def drop_course(course_id):
+def drop_course_route(course_id):
     identity = get_jwt_identity()
     student_id = identity.get('user_id')
-
-    enrollment = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
-    if not enrollment:
-        return jsonify({"msg": "Not enrolled in this course"}), 404
-
-    db.session.delete(enrollment)
-    db.session.commit()
-
-    return jsonify({"msg": "Dropped course successfully"}), 200
-
+    try:
+        drop_course(student_id, course_id)
+        return jsonify({"msg": "Dropped course successfully"}), 200
+    except ValueError as e:
+        return jsonify({"msg": str(e)}), 404
 
 @bp.route('/enrollments', methods=['GET'])
 @jwt_required()
-def get_enrollments():
+def get_enrollments_route():
     identity = get_jwt_identity()
     student_id = identity.get('user_id')
-
-    enrollments = Enrollment.query.filter_by(student_id=student_id).all()
+    enrollments = get_enrollments(student_id)
     return jsonify([{
         'enrollment_id': enrollment.enrollment_id,
         'course_id': enrollment.course_id,
         'enrollment_date': enrollment.enrollment_date
     } for enrollment in enrollments])
 
-
 @bp.route('/enrollments/export/<string:file_format>', methods=['GET'])
 @jwt_required()
-def export_enrollments(file_format):
-    enrollments = Enrollment.query.all()
+def export_enrollments_route(file_format):
+    enrollments = get_all_enrollments()
     data = [{
         'student_id': enrollment.student_id,
         'course_id': enrollment.course_id,
@@ -90,8 +70,7 @@ def export_enrollments(file_format):
         p.drawString(100, height - 100, "Enrollments Report")
         y = height - 130
         for item in data:
-            p.drawString(100, y,
-                         f"Student ID: {item['student_id']}, Course ID: {item['course_id']}, Enrollment Date: {item['enrollment_date']}")
+            p.drawString(100, y, f"Student ID: {item['student_id']}, Course ID: {item['course_id']}, Enrollment Date: {item['enrollment_date']}")
             y -= 20
 
         p.showPage()
