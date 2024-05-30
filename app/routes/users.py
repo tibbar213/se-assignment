@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required
 
 bp = Blueprint('users', __name__)
 
-@bp.route('/users', methods=['POST'])
+@bp.route('', methods=['POST'])
 @jwt_required()
 def create_user_route():
     data = request.get_json()
@@ -14,7 +14,7 @@ def create_user_route():
     except ValueError as e:
         return jsonify({"msg": str(e)}), 400
 
-@bp.route('/users/<int:user_id>', methods=['PUT'])
+@bp.route('/<int:user_id>', methods=['PUT'])
 @jwt_required()
 def update_user_route(user_id):
     data = request.get_json()
@@ -24,13 +24,13 @@ def update_user_route(user_id):
     except ValueError as e:
         return jsonify({"msg": str(e)}), 400
 
-@bp.route('/users/<int:user_id>', methods=['DELETE'])
+@bp.route('/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user_route(user_id):
     delete_user(user_id)
     return jsonify({"msg": "User deleted successfully"}), 200
 
-@bp.route('/users/<int:user_id>', methods=['GET'])
+@bp.route('/<int:user_id>', methods=['GET'])
 @jwt_required()
 def get_user_route(user_id):
     user = get_user(user_id)
@@ -40,7 +40,7 @@ def get_user_route(user_id):
         'user_type': user.user_type
     })
 
-@bp.route('/users', methods=['GET'])
+@bp.route('', methods=['GET'])
 @jwt_required()
 def get_users_route():
     users = get_users()

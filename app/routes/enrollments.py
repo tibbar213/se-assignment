@@ -8,7 +8,7 @@ from reportlab.pdfgen import canvas
 
 bp = Blueprint('enrollments', __name__)
 
-@bp.route('/enrollments', methods=['POST'])
+@bp.route('', methods=['POST'])
 @jwt_required()
 def enroll_course_route():
     identity = get_jwt_identity()
@@ -21,7 +21,7 @@ def enroll_course_route():
     except ValueError as e:
         return jsonify({"msg": str(e)}), 400
 
-@bp.route('/enrollments/<int:course_id>', methods=['DELETE'])
+@bp.route('/<int:course_id>', methods=['DELETE'])
 @jwt_required()
 def drop_course_route(course_id):
     identity = get_jwt_identity()
@@ -32,7 +32,7 @@ def drop_course_route(course_id):
     except ValueError as e:
         return jsonify({"msg": str(e)}), 404
 
-@bp.route('/enrollments', methods=['GET'])
+@bp.route('', methods=['GET'])
 @jwt_required()
 def get_enrollments_route():
     identity = get_jwt_identity()
@@ -44,7 +44,7 @@ def get_enrollments_route():
         'enrollment_date': enrollment.enrollment_date
     } for enrollment in enrollments])
 
-@bp.route('/enrollments/export/<string:file_format>', methods=['GET'])
+@bp.route('/export/<string:file_format>', methods=['GET'])
 @jwt_required()
 def export_enrollments_route(file_format):
     enrollments = get_all_enrollments()
