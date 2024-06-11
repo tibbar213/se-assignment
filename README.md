@@ -19,7 +19,7 @@
 ## 3.	Demo要求
 	实现上述基本要求。
 
-##运行命令
+## 运行命令
 ```
 python manage.py
 npm run serve
