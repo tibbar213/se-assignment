@@ -6,6 +6,9 @@
     <p>Credits: {{ course.credits }}</p>
     <p>Start Time: {{ course.start_time }}</p>
     <p>Max Students: {{ course.max_students }}</p>
+    <router-link :to="'/courses/edit/' + course.course_id">
+      <button>Edit Course</button>
+    </router-link>
   </div>
 </template>
 
@@ -22,12 +25,12 @@ export default {
   created() {
     const courseId = this.$route.params.id;
     axios.get(`/courses/${courseId}`)
-      .then(response => {
-        this.course = response.data;
-      })
-      .catch(error => {
-        console.error('Error fetching course details:', error);
-      });
+        .then(response => {
+          this.course = response.data;
+        })
+        .catch(error => {
+          console.error('Error fetching course details:', error);
+        });
   }
 };
 </script>

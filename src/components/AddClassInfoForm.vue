@@ -24,6 +24,7 @@
 
 <script>
 export default {
+  name: 'AddClassInfoForm',
   data() {
     return {
       course_id: '',

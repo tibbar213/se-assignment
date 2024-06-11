@@ -39,6 +39,7 @@
 import axios from '../axios';
 
 export default {
+  name: 'EditCourseForm',
   data() {
     return {
       course: {}
@@ -63,7 +64,7 @@ export default {
         }
       })
       .then(() => {
-        this.$router.push('/courses');
+        this.$router.push(`/courses/${courseId}`);
       })
       .catch(err => {
         console.error(err);

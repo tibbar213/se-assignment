@@ -145,6 +145,14 @@ export default createStore({
           });
       });
     },
+    exportEnrollments() {
+      return axios.get('/enrollments/export', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        responseType: 'blob' // Important for file download
+      });
+    },
     getClassInfo({ commit }) {
       axios.get('/class_info', {
         headers: {
